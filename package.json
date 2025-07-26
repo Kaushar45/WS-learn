@@ -1,6 +1,6 @@
 {
-  "name": "ws_demo",
-  "version": "0.1.0",
+  "name": "gameserver",
+  "version": "1.0.0",
   "main": "index.mjs",
   "scripts": {
     "start": "node index.mjs",
