@@ -2,6 +2,8 @@ import express from "express";
 import { createServer } from "node:http";
 import { Server } from "socket.io";
 
+const clients = {};
+
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
@@ -13,11 +15,24 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   console.log("User Connected");
   console.log(socket.id);
-  setTimeout(() => {
-    socket.emit("test", "Hello from Server");
-  }, 2000);
-  socket.on("test", (data) => {
+
+  socket.on("info", (data) => {
     console.log(data);
+    clients[data.userId] = { socketId: socket.id, userName: data.userName };
+    console.log(clients);
+  });
+  socket.on("message", (data) => {
+    console.log(data);
+    if (clients[data.toUserId].socketId) {
+      io.to(clients[data.toUserId].socketId).emit("message", {
+        fromUserId: data.fromUserId,
+        fromUserName: data.fromUserName,
+        message: data.message,
+      });
+    }
+  });
+  socket.on("disconnect", () => {
+    console.log("user has left");
   });
 });
 

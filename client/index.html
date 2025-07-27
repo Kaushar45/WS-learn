@@ -5,18 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WS Demo</title>
     <script src="https://cdn.socket.io/4.8.1/socket.io.js"></script>
-    <script>
-      const socket = io("ws://localhost:5000");
-      setTimeout(() => {
-        socket.emit("test", "Hello from Client");
-      }, 5000);
-      socket.on("test", (data) => {
-        console.log(data);
-      });
-    </script>
   </head>
-
   <body>
     <h1>WS Demo</h1>
+    <h1>Demo Chat</h1>
+    <h3 id="user_id"></h3>
+
+    <form>
+      <input
+        id="r_user_id"
+        type="number"
+        placeholder="enter recipient user id"
+      />
+      <input id="message" type="text" placeholder="write your message" />
+      <button onclick="sendMessage()">Send</button>
+    </form>
+
+    <div id="message_box"></div>
   </body>
+
+  <script>
+    const userId = prompt("your id");
+    const userName = prompt("name");
+    const socket = io("ws://localhost:5000");
+
+    const messageBoxElement = document.getElementById("message_box");
+    socket.on("message", (data) => {
+      const messageElement = document.createElement("p");
+      messageElement.innerHTML = `${data.fromUserId}: ${data.fromUserName} -> ${data.message}`;
+      messageBoxElement.appendChild(messageElement);
+    });
+
+    const userIdElement = document.getElementById("user_id");
+    userIdElement.innerText = `User id : ${userId} Name: ${userName}`;
+    socket.emit("info", { userId, userName });
+
+    const rUserIdElement = document.getElementById("r_user_id");
+    const messageElement = document.getElementById("message");
+    const sendMessage = () => {
+      const data = {
+        toUserId: rUserIdElement.value,
+        message: messageElement.value,
+        fromUserId: userId,
+        fromUserName: userName,
+      };
+      socket.emit("message", data);
+    };
+  </script>
 </html>
