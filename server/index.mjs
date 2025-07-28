@@ -18,21 +18,27 @@ io.on("connection", (socket) => {
 
   socket.on("info", (data) => {
     console.log(data);
+    if (!data.userId) {
+      return;
+    }
     clients[data.userId] = { socketId: socket.id, userName: data.userName };
     console.log(clients);
   });
   socket.on("message", (data) => {
     console.log(data);
-    if (clients[data.toUserId].socketId) {
-      io.to(clients[data.toUserId].socketId).emit("message", {
-        fromUserId: data.fromUserId,
-        fromUserName: data.fromUserName,
-        message: data.message,
-      });
+
+    if (!clients[data.toUserId] || clients[data.toUserId].socketId) {
+      return;
     }
+    io.to(clients[data.toUserId].socketId).emit("message", {
+      fromUserId: data.fromUserId,
+      fromUserName: data.fromUserName,
+      message: data.message,
+    });
   });
-  socket.on("disconnect", () => {
+  socket.on("disconnect", (info) => {
     console.log("user has left");
+    console.log(info);
   });
 });
 
